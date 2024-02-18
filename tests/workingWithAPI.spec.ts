@@ -12,8 +12,10 @@ test.beforeEach(async ({ page }) => {
 
   await page.goto("https://angular.realworld.how/");
   await page.getByText("Sign in").click();
-  await page.getByRole("textbox", {name: "Email"}).fill("pwtestminh@test.com");
-  await page.getByRole("textbox", {name: "Password"}).fill("123456")
+  await page
+    .getByRole("textbox", { name: "Email" })
+    .fill("pwtestminh@test.com");
+  await page.getByRole("textbox", { name: "Password" }).fill("123456");
   await page.getByRole("button").click();
 });
 
@@ -54,38 +56,81 @@ test("Delete article", async ({ page, request }) => {
   const responseBody = await response.json();
   const accessToken = responseBody.user.token;
   console.log(responseBody.user.token);
-  
-  // API create new article
- const articleResponse = await request.post("https://api.realworld.io/api/articles", {
-    data: {
-      article: {
-        title: "This is a test article",
-        description: "This is a test description",
-        body: "This is a test body",
-        tagList: [],
-      },
-    },
-    headers: {
-      Authorization: `Token ${accessToken}`,
-    },
-  });
-  expect(articleResponse.status()).toEqual(201); 
 
-  //  delete article 
+  // API create new article
+  const articleResponse = await request.post(
+    "https://api.realworld.io/api/articles",
+    {
+      data: {
+        article: {
+          title: "This is a test article",
+          description: "This is a test description",
+          body: "This is a test body",
+          tagList: [],
+        },
+      },
+      headers: {
+        Authorization: `Token ${accessToken}`,
+      },
+    }
+  );
+  expect(articleResponse.status()).toEqual(201);
+
+  //  delete article
   await page.getByText("Global Feed").click();
   await page.getByText("This is a test article").click();
-  await page.getByRole("button", {name:"Delete Article"}).first().click();
+  await page.getByRole("button", { name: "Delete Article" }).first().click();
   await page.getByText("Global Feed").click();
-  await expect(page.locator("app-article-list h1").first()).not.toContainText("This is a test article");
-
+  await expect(page.locator("app-article-list h1").first()).not.toContainText(
+    "This is a test article"
+  );
 });
 
-test('Create article ', async ({ page }) => {
+test("Create article ", async ({ page, request }) => {
   await page.getByText("New Article").click();
-  await page.getByRole("textbox",{name:"Article Title"}).fill("Playwright is awesome");
-  await page.getByRole("textbox", {name:"What's this article about?"}).fill("About the Playwright");
-  await page.getByRole("textbox",{name:"Write your article (in markdown)"}).fill("We like to use playwright for automation");
-  await page.getByRole("button",{name:"Publish Article"}).click();
-})
+  await page
+    .getByRole("textbox", { name: "Article Title" })
+    .fill("Playwright is awesome");
+  await page
+    .getByRole("textbox", { name: "What's this article about?" })
+    .fill("About the Playwright");
+  await page
+    .getByRole("textbox", { name: "Write your article (in markdown)" })
+    .fill("We like to use playwright for automation");
+  await page.getByRole("button", { name: "Publish Article" }).click();
+  //After click publish article, we will wait for this api completed
+  const articleResponse = await page.waitForResponse(
+    "https://api.realworld.io/api/articles/"
+  );
+  const articleResponseBody = await articleResponse.json();
+  const slugId = articleResponseBody.article.slug;
 
- 
+  await expect(page.locator(".article-page h1")).toContainText(
+    "Playwright is awesome"
+  );
+  await page.getByText("Home").click();
+  await page.getByText("Global Feed").click();
+
+  await expect(page.locator("app-article-list h1").first()).toContainText(
+    "Playwright is awesome"
+  );
+
+  const response = await request.post("https://api.realworld.io/api/users/login",
+    {
+      data: {
+        user: { email: "pwtestminh@test.com", password: "123456" },
+      },
+    }
+  );
+  const responseBody = await response.json();
+  const accessToken = responseBody.user.token;
+  console.log(responseBody.user.token);
+
+ const deleteArticleRequest = await request.delete(`https://api.realworld.io/api/articles/${slugId}`,{
+    headers: {
+      Authorization: `Token ${accessToken}`
+    }
+  })
+
+  expect(deleteArticleRequest.status()).toEqual(204);
+});
