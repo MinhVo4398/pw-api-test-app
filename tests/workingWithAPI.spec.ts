@@ -1,6 +1,6 @@
 import { test, expect, request } from "@playwright/test";
 import tags from "../test-data/test.json";
-import { join } from "path";
+
 
 test.beforeEach(async ({ page }) => {
   // thay vi parse url(https://angular.realworld.how/) thi co the viet gon voi pattern nhu duoi
@@ -11,12 +11,6 @@ test.beforeEach(async ({ page }) => {
   });
 
   await page.goto("https://angular.realworld.how/");
-  await page.getByText("Sign in").click();
-  await page
-    .getByRole("textbox", { name: "Email" })
-    .fill("pwtestminh@test.com");
-  await page.getByRole("textbox", { name: "Password" }).fill("123456");
-  await page.getByRole("button").click();
 });
 
 test("has title", async ({ page }) => {
