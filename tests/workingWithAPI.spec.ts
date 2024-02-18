@@ -77,5 +77,15 @@ test("Delete article", async ({ page, request }) => {
   await page.getByRole("button", {name:"Delete Article"}).first().click();
   await page.getByText("Global Feed").click();
   await expect(page.locator("app-article-list h1").first()).not.toContainText("This is a test article");
-  
+
 });
+
+test('Create article ', async ({ page }) => {
+  await page.getByText("New Article").click();
+  await page.getByRole("textbox",{name:"Article Title"}).fill("Playwright is awesome");
+  await page.getByRole("textbox", {name:"What's this article about?"}).fill("About the Playwright");
+  await page.getByRole("textbox",{name:"Write your article (in markdown)"}).fill("We like to use playwright for automation");
+  await page.getByRole("button",{name:"Publish Article"}).click();
+})
+
+ 
