@@ -39,17 +39,7 @@ test("has title", async ({ page }) => {
 
 test("Delete article", async ({ page, request }) => {
   // API to login
-  const response = await request.post(
-    "https://api.realworld.io/api/users/login",
-    {
-      data: {
-        user: { email: "pwtestminh@test.com", password: "123456" },
-      },
-    }
-  );
-  const responseBody = await response.json();
-  const accessToken = responseBody.user.token;
-  console.log(responseBody.user.token);
+  
 
   // API create new article
   const articleResponse = await request.post(
@@ -62,9 +52,6 @@ test("Delete article", async ({ page, request }) => {
           body: "This is a test body",
           tagList: [],
         },
-      },
-      headers: {
-        Authorization: `Token ${accessToken}`,
       },
     }
   );
@@ -109,22 +96,6 @@ test("Create article ", async ({ page, request }) => {
     "Playwright is awesome"
   );
 
-  const response = await request.post("https://api.realworld.io/api/users/login",
-    {
-      data: {
-        user: { email: "pwtestminh@test.com", password: "123456" },
-      },
-    }
-  );
-  const responseBody = await response.json();
-  const accessToken = responseBody.user.token;
-  console.log(responseBody.user.token);
-
- const deleteArticleRequest = await request.delete(`https://api.realworld.io/api/articles/${slugId}`,{
-    headers: {
-      Authorization: `Token ${accessToken}`
-    }
-  })
-
+ const deleteArticleRequest = await request.delete(`https://api.realworld.io/api/articles/${slugId}`)
   expect(deleteArticleRequest.status()).toEqual(204);
 });
